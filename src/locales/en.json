@@ -7,7 +7,8 @@
     "VALIDATION_FAILED": "Validation failed. Please modify the request and try again."
   },
   "VALIDATION_ERRORS": {
-    "INVALID_TITLE": "Please specify valid string for title"
+    "INVALID_TITLE": "Please specify valid string for title",
+    "INVALID_ID": "Please specify valid todo id"
   },
   "MESSAGES": {
     "HEALTHCHECK": "OK"

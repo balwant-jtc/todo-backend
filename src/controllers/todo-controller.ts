@@ -1,21 +1,19 @@
-import lodash from 'lodash';
+import lodash from "lodash";
 
-import { BaseController } from './base-controller';
-import { NextFunction, Response, Router } from 'express';
-import { Validation } from '@helpers';
-import { Todo } from '@models';
+import { BaseController } from "./base-controller";
+import { NextFunction, Response, Router } from "express";
+import { Validation } from "@helpers";
+import { Todo } from "@models";
 import {
   AppContext,
   Errors,
   ExtendedRequest,
   ValidationFailure,
-} from '@typings';
-import {
-  createTodoValidator
-} from '@validators';
+} from "@typings";
+import { createTodoValidator, deleteTodoValidator } from "@validators";
 
 export class TodoController extends BaseController {
-  public basePath: string = '/todos';
+  public basePath: string = "/todos";
   public router: Router = Router();
 
   constructor(ctx: AppContext) {
@@ -27,18 +25,28 @@ export class TodoController extends BaseController {
     this.router.post(
       `${this.basePath}`,
       createTodoValidator(this.appContext),
-      this.createTodo,
+      this.createTodo
+    );
+
+    this.router.delete(
+      `${this.basePath}/:id`,
+      deleteTodoValidator(this.appContext),
+      this.deleteTodo
     );
   }
 
-  private createTodo = async (req:ExtendedRequest, res: Response, next: NextFunction) => {
+  private createTodo = async (
+    req: ExtendedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     const failures: ValidationFailure[] = Validation.extractValidationErrors(
-      req,
+      req
     );
     if (failures.length > 0) {
       const valError = new Errors.ValidationError(
-        res.__('DEFAULT_ERRORS.VALIDATION_FAILED'),
-        failures,
+        res.__("DEFAULT_ERRORS.VALIDATION_FAILED"),
+        failures
       );
       return next(valError);
     }
@@ -46,9 +54,41 @@ export class TodoController extends BaseController {
     const { title } = req.body;
     const todo = await this.appContext.todoRepository.save(
       new Todo({
-       title
-      }),
+        title,
+      })
     );
     res.status(201).json(todo.serialize());
-  }
+  };
+
+  private deleteTodo = async (
+    req: ExtendedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const failures: ValidationFailure[] = Validation.extractValidationErrors(
+      req
+    );
+    if (failures.length > 0) {
+      const valError = new Errors.ValidationError(
+        res.__("DEFAULT_ERRORS.VALIDATION_FAILED"),
+        failures
+      );
+      return next(valError);
+    }
+
+    const { id } = req.params;
+    const todo = await this.appContext.todoRepository.count({
+      _id: id,
+      isDeleted: false,
+    });
+    if (todo) {
+      await this.appContext.todoRepository.update(
+        { _id: id },
+        { $set: { isDeleted: true } }
+      );
+      res.status(204).send();
+    } else {
+      res.status(404).send();
+    }
+  };
 }

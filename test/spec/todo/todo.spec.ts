@@ -41,7 +41,9 @@ describe("POST /todos", () => {
       title: "",
     });
     expect(res).to.have.status(400);
-    expect(res.body).to.have.nested.property("failures[0].message").to.equal("Please specify valid string for title");
+    expect(res.body)
+      .to.have.nested.property("failures[0].message")
+      .to.equal("Please specify valid string for title");
   });
 
   it("should return a validation error if title is not a string", async () => {
@@ -53,6 +55,30 @@ describe("POST /todos", () => {
       });
 
     expect(res).to.have.status(400);
-    expect(res.body).to.have.nested.property("failures[0].message").to.equal("Please specify valid string for title");
+    expect(res.body)
+      .to.have.nested.property("failures[0].message")
+      .to.equal("Please specify valid string for title");
+  });
+});
+
+describe("DELETE /todos/:id", () => {
+  it("should return a validation error if id is not Mongo id", async () => {
+    const res = await chai.request(expressApp).delete("/todos/1");
+
+    expect(res).to.have.status(400);
+    expect(res.body)
+      .to.have.nested.property("failures[0].message")
+      .to.equal("Please specify valid todo id");
+  });
+
+  it("should return 204 if todo exists else 404", async () => {
+    let todo = await testAppContext.todoRepository.save(
+      new Todo({ title: "TODO_TO_BE_DELETED" })
+    );
+    const res1 = await chai.request(expressApp).delete(`/todos/${todo._id}`);
+    expect(res1).to.have.status(204);
+
+    const res2 = await chai.request(expressApp).delete(`/todos/${todo._id}`);
+    expect(res2).to.have.status(404);
   });
 });
