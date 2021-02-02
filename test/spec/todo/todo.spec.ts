@@ -40,8 +40,8 @@ describe("POST /todos", () => {
     const res = await chai.request(expressApp).post("/todos").send({
       title: "",
     });
-
     expect(res).to.have.status(400);
+    expect(res.body).to.have.nested.property("failures[0].message").to.equal("Please specify valid string for title");
   });
 
   it("should return a validation error if title is not a string", async () => {
@@ -53,5 +53,6 @@ describe("POST /todos", () => {
       });
 
     expect(res).to.have.status(400);
+    expect(res.body).to.have.nested.property("failures[0].message").to.equal("Please specify valid string for title");
   });
 });
