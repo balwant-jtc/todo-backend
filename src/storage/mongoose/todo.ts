@@ -3,7 +3,7 @@ import { model, Schema } from "mongoose";
 const todoSchema: Schema = new Schema(
   {
     title: { type: String, required: true },
-    isDeleted: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: false },
   },
   {
     collection: "todos",

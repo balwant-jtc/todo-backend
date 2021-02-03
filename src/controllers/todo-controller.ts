@@ -77,15 +77,11 @@ export class TodoController extends BaseController {
     }
 
     const { id } = req.params;
-    const todo = await this.appContext.todoRepository.count({
-      _id: id,
-      isDeleted: false,
-    });
-    if (todo) {
-      await this.appContext.todoRepository.update(
-        { _id: id },
-        { $set: { isDeleted: true } }
-      );
+    const todo = await this.appContext.todoRepository.update(
+      { _id: id, isActive: true},
+      { $set: { isActive: false } }
+    );
+    if (todo?._id) {
       res.status(204).send();
     } else {
       res.status(404).send();
